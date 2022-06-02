@@ -1,2 +1,2 @@
-.plist
-/build
+*.plist
+*build/
