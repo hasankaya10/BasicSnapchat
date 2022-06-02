@@ -20,9 +20,7 @@ class FeedViewController: UIViewController , UITableViewDelegate, UITableViewDat
         tableView.dataSource = self
         getUserInfo()
         getSnapsFromFirebase()
-    }
-    override func viewWillAppear(_ animated: Bool) {
-        getSnapsFromFirebase()
+        tableView.reloadData()
     }
     func getSnapsFromFirebase(){
         firestoreDatabase.collection("Snaps").order(by: "date" , descending: true).addSnapshotListener { snapshot, error in

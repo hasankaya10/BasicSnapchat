@@ -10,9 +10,13 @@ import Firebase
 import FirebaseStorage
 class UploadViewController: UIViewController, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
 
+    @IBOutlet weak var uploadButton: UIButton!
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet weak var uploadImage: UIImageView!
     override func viewDidLoad() {
         super.viewDidLoad()
+        activityIndicator.stopAnimating()
+        uploadButton.isEnabled = false
         
         uploadImage.isUserInteractionEnabled = true
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(chooseImage))
@@ -29,8 +33,11 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate & 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         uploadImage.image = info[.originalImage] as? UIImage
         self.dismiss(animated: true,completion: nil)
+        uploadButton.isEnabled = true
     }
     @IBAction func UploadTouched(_ sender: Any) {
+        activityIndicator.startAnimating()
+        uploadButton.isEnabled = false
         let storage = Storage.storage()
         let storageReferance = storage.reference()
         let mediaFolder = storageReferance.child("media")
@@ -50,6 +57,7 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate & 
                             let firestore = Firestore.firestore()
                             firestore.collection("Snaps").whereField("snapOwner", isEqualTo: UserSingleton.sharedUserInfo.username).getDocuments { snapshot, error in
                                 if error != nil {
+                                    self.activityIndicator.stopAnimating()
                                     self.present(makeAlert(title: "Error", message: error?.localizedDescription ?? "Error"), animated: true)
                                 } else {
                                     if snapshot?.isEmpty == false && snapshot != nil {
@@ -61,9 +69,11 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate & 
                                                 let additionalArray = ["imageUrlArray" : imageUrlArray] as [String : Any]
                                                 firestore.collection("Snaps").document(documentId).setData(additionalArray, merge: true) { error in
                                                     if error == nil {
+                                                        self.activityIndicator.stopAnimating()
                                                         self.tabBarController?.selectedIndex = 0
                                                         self.uploadImage.image = UIImage(named: "uploadImage")
                                                     } else {
+                                                        self.activityIndicator.stopAnimating()
                                                         self.present(makeAlert(title: "Error", message: error?.localizedDescription ?? "Hata"), animated: true)
                                                     }
                                                 }
@@ -81,6 +91,7 @@ class UploadViewController: UIViewController, UIImagePickerControllerDelegate & 
                                             } else {
                                                 self.tabBarController?.selectedIndex = 0
                                                 self.uploadImage.image = UIImage(named: "uploadImage")
+                                                
                                             }
                                         }
                                         

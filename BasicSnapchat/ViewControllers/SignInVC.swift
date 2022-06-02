@@ -10,6 +10,7 @@ import Firebase
 
 class SignInVC: UIViewController {
 
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var usernameTextField: UITextField!
     @IBOutlet weak var emailTextField: UITextField!
@@ -18,29 +19,37 @@ class SignInVC: UIViewController {
         // Do any additional setup after loading the view.
     }
     @IBAction func SignInButtonTouched(_ sender: Any) {
+        
         if emailTextField.text != "" && passwordTextField.text != ""  {
+            activityIndicator.startAnimating()
             Auth.auth().signIn(withEmail: emailTextField.text!, password: passwordTextField.text!) { authdataresult, error in
                 if error != nil {
+                    self.activityIndicator.stopAnimating()
                     self.present(makeAlert(title: "Error", message: error?.localizedDescription ?? "Error be an occured"), animated: true)
                 } else {
                     self.performSegue(withIdentifier: "toFeedVC", sender: nil)
                 }
             }
         } else {
+            self.activityIndicator.stopAnimating()
             present(makeAlert(title: "Error", message: "Please enter an E-Mail , Password and Username"), animated: true)
         }
         
     }
     @IBAction func SignUpButtonTouched(_ sender: Any) {
+        
         if emailTextField.text != "" && passwordTextField.text != "" && usernameTextField.text != nil {
+            activityIndicator.startAnimating()
             Auth.auth().createUser(withEmail: emailTextField.text!, password: passwordTextField.text!) { authdataresult, error in
                 if error != nil {
+                    self.activityIndicator.stopAnimating()
                     self.present(makeAlert(title: "Error", message: error?.localizedDescription ?? "Error be an occured"), animated: true)
                 } else {
                     
                     let userDictionary = ["email" : self.emailTextField.text!, "username" : self.usernameTextField.text!] as [String : Any]
                     let firestore = Firestore.firestore().collection("UserInfo").addDocument(data: userDictionary) { error in
                         if error != nil {
+                            self.activityIndicator.stopAnimating()
                             self.present(makeAlert(title: "Error", message: error?.localizedDescription ?? "" ), animated: true)
                         }
                     }
